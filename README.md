@@ -38,7 +38,8 @@ Please output all processed files under path `SASRec/datasets/data/dataset_name/
 Model training with our default hyper-parameter configure.
 
 ```bash
-bash train.sh ${gpu_id} ${data_name}
+cd SASRec
+bash scripts/train.sh ${gpu_id} ${data_name}
 ```
 Evaluation methods: NDCG@K, Recall@K, MRR, AUC
 
