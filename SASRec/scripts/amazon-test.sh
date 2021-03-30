@@ -1,0 +1,35 @@
+DATASET="amazon"
+
+CUDA_VISIBLE_DEVICES=$1 python main.py \
+    --dataset_code 'item' \
+    --dataloader_code 'sasrec' \
+    --trainer_code "sasrec_sample" \
+    --model_code 'sasrec' \
+    --data_path "datasets/data/${DATASET}" \
+    --train_batch_size 2048 \
+    --val_batch_size 512 \
+    --test_batch_size 512 \
+    --train_negative_sampler_code 'random' \
+    --train_negative_sample_size 0 \
+    --train_negative_sampling_seed 0 \
+    --test_negative_sampler_code 'random' \
+    --test_negative_sample_size 1000 \
+    --test_negative_sampling_seed 98765 \
+    --device 'cuda' \
+    --device_idx $1 \
+    --optimizer 'Adam' \
+    --lr 1e-3 \
+    --weight_decay 0 \
+    --enable_lr_schedule 'linear' \
+    --warmup_steps 0 \
+    --num_epochs 100000 \
+    --stop_epochs 1000 \
+    --best_metric 'NDCG@10' \
+    --model_init_seed 0 \
+    --bert_dropout 0.3 \
+    --bert_att_dropout 0.1 \
+    --bert_hidden_dim 100 \
+    --bert_max_len 50 \
+    --bert_num_blocks 2  \
+    --bert_num_heads 1 \
+    --verbose 1 
