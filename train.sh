@@ -1,14 +1,14 @@
 DATASET=$2
 
-CUDA_VISIBLE_DEVICES=$1 python main.py \
+CUDA_VISIBLE_DEVICES=$1 python SASRec/main.py \
     --dataset_code 'item' \
     --dataloader_code 'sasrec' \
     --trainer_code "sasrec_sample" \
     --model_code 'sasrec' \
     --data_path "datasets/data/${DATASET}" \
-    --train_batch_size 2048 \
-    --val_batch_size 512 \
-    --test_batch_size 512 \
+    --train_batch_size 256 \
+    --val_batch_size 128 \
+    --test_batch_size 128 \
     --train_negative_sampler_code 'random' \
     --train_negative_sample_size 0 \
     --train_negative_sampling_seed 0 \
