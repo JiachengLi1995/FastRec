@@ -24,7 +24,7 @@ class LabelField:
 
 parser = argparse.ArgumentParser()
     
-parser.add_argument('--file_path', default='Beauty.json.gz', help='Processing file path (.gz file).')
+parser.add_argument('--file_path', default='data/Beauty.json.gz', help='Processing file path (.gz file).')
 parser.add_argument('--output_path', default='Beauty', help='Output directory')
 args = parser.parse_args()
 
