@@ -63,6 +63,8 @@ Training time is about 25 hours.
 
 ## Notebook
 
+We also provide a notebook `Amazon_Beauty.ipynb` to demostrate the whole training process with a toy Amazon dataset.
+
 
 
 
