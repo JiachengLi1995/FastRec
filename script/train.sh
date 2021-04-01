@@ -14,8 +14,8 @@ CUDA_VISIBLE_DEVICES=$1 python ${3}.py \
     --lr 1e-3 \
     --weight_decay 0 \
     --num_epochs 10 \
-    --global_epochs 10 \
-    --local_epochs 10 \
+    --global_epochs 20 \
+    --local_epochs 5 \
     --subset_size 5000000 \
     --best_metric 'NDCG@10' \
     --model_init_seed 0 \

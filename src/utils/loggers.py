@@ -76,7 +76,7 @@ class BestModelLogger(AbstractBaseLogger):
     def log(self, *args, **kwargs):
         current_metric = kwargs[self.metric_key]
         if self.best_metric < current_metric:
-            print("Update Best {} Model at {}".format(self.metric_key, kwargs['epoch']))
+            print("Update Best {} Model".format(self.metric_key))
             self.best_metric = current_metric
             save_state_dict(kwargs['state_dict'], self.checkpoint_path, self.filename)
 

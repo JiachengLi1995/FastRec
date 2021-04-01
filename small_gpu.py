@@ -19,6 +19,8 @@ if __name__ == '__main__':
     dataset = dataset_factory(args)
 
     # large embedding table (on cpu)
+    global_num_items = set(list(dataset.smap.keys()))
+    local_num_items = set([])
     large_embed = torch.zeros(len(dataset.smap)+2, args.trm_hidden_dim) # embeddings + [cloze, pad] 
     torch.nn.init.xavier_uniform_(large_embed[:-2])
 
@@ -28,7 +30,10 @@ if __name__ == '__main__':
         # subdataset and data loader
         subdataset = dataset.subdataset(k=args.subset_size)
         train_loader, val_loader, test_loader, subdataset = dataloader_factory(args, subdataset)
-        print("[%d] #user %d, #item %d, start negative sampling ..." % (idx, len(subdataset.umap), len(subdataset.smap)))
+        temp_num_items = set(list(subdataset.smap.keys()))
+        local_num_items = local_num_items | temp_num_items
+        print("[%d] #user %d, #item %d, local cover rate %.4f, total cover rate %.4f start negative sampling ..." % \
+            (idx, len(subdataset.umap), len(subdataset.smap), len(temp_num_items)/len(global_num_items), len(local_num_items)/len(global_num_items)))
         # bridge large embed table with local embed table
         # eg. smap = {5:1} --> 5(in large)==1(in local)
         smap_r = {subdataset.smap[s]:s for s in subdataset.smap}

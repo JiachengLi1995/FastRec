@@ -42,7 +42,7 @@ class ItemDataset(object):
         return "item"
 
     def subdataset(self, k=100000):
-        assert len(self.train) >= k
+        assert len(self.smap) > k
         # sample
         user_shuffle = list(self.train.keys())
         random.shuffle(user_shuffle)
