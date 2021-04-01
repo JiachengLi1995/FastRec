@@ -1,6 +1,6 @@
 DATASET=${2}
 
-CUDA_VISIBLE_DEVICES=$2 python ${3}.py \
+CUDA_VISIBLE_DEVICES=$1 python ${3}.py \
     --data_path "data/${DATASET}" \
     --train_batch_size 2048 \
     --val_batch_size 512 \
@@ -9,7 +9,7 @@ CUDA_VISIBLE_DEVICES=$2 python ${3}.py \
     --test_negative_sample_size 1000 \
     --test_negative_sampling_seed 98765 \
     --device 'cuda' \
-    --device_idx $2 \
+    --device_idx $1 \
     --optimizer 'Adam' \
     --lr 1e-3 \
     --weight_decay 0 \
