@@ -7,7 +7,7 @@ Model is based on sequential recommender SASRec. [[paper](https://cseweb.ucsd.ed
 ## Dependencies
 
 ```bash
-pip install -r SASRec/requirements.txt
+pip install -r src/requirements.txt
 ```
 
 ## Data Preprocess
@@ -15,12 +15,12 @@ pip install -r SASRec/requirements.txt
 Our pipeline take .gz file from [Amazon Review Data (2018)](https://nijianmo.github.io/amazon/index.html) as input. 
 
 ```bash
-python data_process.py --file_path [gz file path] --output_path [output directory]
+python data/data_process.py --file_path [gz file path] --output_path [output directory]
 ```
 
 data_process.py will generate train/val/test json files with leave-one-out strategy as SASRec paper mentioned. "umap.json" and "smap.json" contain the dictionary that convert user id and item id in raw data into numbers used in model.
 
-Please output all processed files under path `SASRec/datasets/data/dataset_name/`.
+Please output all processed files under path `data/dataset_name/`.
 
 | Name        | Description     | Example |
 |-------------|--------------|---------------|
@@ -37,10 +37,14 @@ Please output all processed files under path `SASRec/datasets/data/dataset_name/
 
 Model training with our default hyper-parameter configure.
 
-```bash
-cd SASRec
-bash scripts/train.sh ${gpu_id} ${data_name}
-```
+- If GPU Mem is large enough to train the entire model
+    ```bash
+    bash script/train.sh ${gpu_id} ${data_name} large_gpu
+    ```
+- If GPU Mem is too small to train the entire model, we split item embedding table into several parts, and use `small_gpu.py` to tackle the problem.
+    ```bash
+    bash script/train.sh ${gpu_id} ${data_name} small_gpu
+    ```
 Evaluation methods: NDCG@K, Recall@K, MRR, AUC
 
 
@@ -64,12 +68,3 @@ Training time is about 25 hours.
 ## Notebook
 
 We also provide a notebook `Amazon_Beauty.ipynb` to demostrate the whole training process with a toy Amazon dataset.
-
-
-
-
-
-
-
-
-
