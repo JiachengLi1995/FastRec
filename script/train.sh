@@ -14,13 +14,13 @@ CUDA_VISIBLE_DEVICES=$1 python ${3}.py \
     --lr 1e-3 \
     --weight_decay 0 \
     --num_epochs 10 \
-    --global_epochs 1000 \
-    --local_epochs 10 \
+    --global_epochs 10 \
+    --local_epochs 1 \
     --subset_size 5000000 \
     --best_metric 'NDCG@10' \
     --model_init_seed 0 \
     --trm_dropout 0.3 \
-    --trm_att_dropout 0.1 \
+    --trm_att_dropout 0.3 \
     --trm_hidden_dim 50 \
     --trm_max_len 50 \
     --trm_num_blocks 2  \

@@ -49,10 +49,14 @@ if __name__ == '__main__':
         model = trainer.model.to('cpu')
         large_embed[mapping] = model.item_emb.weight.data
 
+        # load large embedding table
+        torch.save(large_embed, os.path.join(ckpt_root, 'models', 'best_emb.pth'))
+
     # model testing and saving
     train_loader, val_loader, test_loader, subdataset = dataloader_factory(args, dataset)
 
     # load large embedding table
+    large_embed = torch.load(os.path.join(ckpt_root, 'models', 'best_emb.pth'))
     model.item_emb = torch.nn.Embedding.from_pretrained(large_embed, freeze=False, padding_idx=-1)
     model.pad_token = model.item_emb.padding_idx
     
