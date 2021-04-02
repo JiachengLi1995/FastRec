@@ -87,5 +87,3 @@ parser.add_argument('--trm_att_dropout', type=float, default=0.2, help='Dropout 
 ################
 parser.add_argument('--experiment_dir', type=str, default='experiments')
 parser.add_argument('--experiment_description', type=str, default='test')
-
-args = parser.parse_args()

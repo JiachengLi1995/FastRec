@@ -31,5 +31,5 @@ if __name__ == '__main__':
 
     # model testing and saving
     trainer.test()
-    trainer.logger_service.complete({'state_dict': (self._create_state_dict())})
+    trainer.logger_service.complete({'state_dict': (trainer._create_state_dict())})
     trainer.writer.close()

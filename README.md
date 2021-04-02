@@ -39,11 +39,11 @@ Model training with our default hyper-parameter configure.
 
 - If GPU Mem is large enough to train the entire model
     ```bash
-    bash script/train.sh ${gpu_id} ${data_name} large_gpu
+    bash script/train.sh ${gpu_id} ${data_name} demo/large_gpu
     ```
 - If GPU Mem is too small to train the entire model, we split item embedding table into several parts, and use `small_gpu.py` to tackle the problem.
     ```bash
-    bash script/train.sh ${gpu_id} ${data_name} small_gpu
+    bash script/train.sh ${gpu_id} ${data_name} demo/small_gpu
     ```
 Evaluation methods: NDCG@K, Recall@K, MRR, AUC
 

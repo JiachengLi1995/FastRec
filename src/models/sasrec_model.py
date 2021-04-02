@@ -105,7 +105,10 @@ class SASRecModel(nn.Module):
 
         log_feats = log_feats[idx1, idx2]
 
-        if mode == "train":
+        if mode == "serving":
+            return log_feats
+
+        elif mode == "train":
             candidates = candidates[idx1, idx2]
             pos_seqs = candidates[:, 0]
             neg_seqs = candidates[:, -1]
