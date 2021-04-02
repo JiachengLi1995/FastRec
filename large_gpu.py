@@ -4,12 +4,13 @@ from src.models import model_factory
 from src.dataloaders import dataloader_factory
 from src.datasets import dataset_factory
 from src.trainers import trainer_factory
-from src.utils.options import args
+from src.utils.options import parser
 from src.utils.utils import *
 
 if __name__ == '__main__':
 
     # hyper-parameter config
+    args = parser.parse_args()
     ckpt_root = setup_train(args)
 
     # dataset and data loader
