@@ -33,7 +33,7 @@ if __name__ == '__main__':
         train_loader, val_loader, test_loader, subdataset = dataloader_factory(args, subdataset)
         temp_num_items = set(list(subdataset.smap.keys()))
         local_num_items = local_num_items | temp_num_items
-        print("[%d] #user %d, #item %d, local cover rate %.4f, total cover rate %.4f start negative sampling ..." % \
+        print("\n[%d] #user %d, #item %d, local cover rate %.4f, total cover rate %.4f, start negative sampling ...\n" % \
             (idx, len(subdataset.umap), len(subdataset.smap), len(temp_num_items)/len(global_num_items), len(local_num_items)/len(global_num_items)))
         # bridge large embed table with local embed table
         # eg. smap = {5:1} --> 5(in large)==1(in local)

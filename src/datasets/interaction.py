@@ -20,6 +20,7 @@ class ItemDataset(object):
                                                          args.test_negative_sampling_seed,
                                                          self.path)
         self.negative_samples = negative_sampler.get_negative_samples()
+        self.subdataset_idx = 0
 
     def merge(self, a, b, c):
         data = {}
@@ -45,14 +46,19 @@ class ItemDataset(object):
         assert len(self.smap) > k
         # sample
         user_shuffle = list(self.train.keys())
-        random.shuffle(user_shuffle)
+        if self.subdataset_idx == 0:
+            random.shuffle(user_shuffle)
         items, users = set([]), []
-        for u in user_shuffle:
-            for i in self.train[u]:
+        for u in range(self.subdataset_idx, len(user_shuffle)):
+            for i in self.train[user_shuffle[u]]:
                 items.add(i)
-            users.append(u)
+            users.append(user_shuffle[u])
             if len(items) > k:
                 break
+        if u == len(user_shuffle) - 1:
+            self.subdataset_idx = 0
+        else:
+            self.subdataset_idx = u + 1
         # user mapping
         umap = dict(zip(users, range(len(users))))
         train = {umap[u]:self.train[u] for u in users}
