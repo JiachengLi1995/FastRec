@@ -50,20 +50,17 @@ class ItemDataset(object):
             random.shuffle(user_shuffle)
         items, users = set([]), []
         for u in range(self.subdataset_idx, len(user_shuffle)):
-            item_temp = set([])
             for i in self.train[user_shuffle[u]]:
-                item_temp.add(i)
+                items.add(i)
             if user_shuffle[u] in self.val:
                 for i in self.val[user_shuffle[u]]:
-                    item_temp.add(i)
+                    items.add(i)
             if user_shuffle[u] in self.test:
                 for i in self.test[user_shuffle[u]]:
-                    item_temp.add(i)
-            if len(items | item_temp) > k:
+                    items.add(i)
+            users.append(user_shuffle[u])
+            if len(items) > k:
                 break
-            else:
-                users.append(user_shuffle[u])
-                items = items | item_temp
         print("user: %d" % u)
         if u == len(user_shuffle) - 1:
             self.subdataset_idx = 0

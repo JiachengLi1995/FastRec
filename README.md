@@ -45,7 +45,7 @@ Model training with our default hyper-parameter configure.
     ```bash
     bash script/train.sh ${gpu_id} ${data_name} small_gpu
     ```
-    Technical details: 1) We maintain a large table (e.g. 15M items) on CPU mem;  2) sample a subset (e.g. 5M items) as to GPU at one time for training, 3) then update the large table after training, 4) repeat the step 2) & 3) until convegence.
+    Technical details: 1) We maintain a large table (e.g. 15M items) on CPU mem;  2) sample a subset (e.g. 5M items) as to GPU at one time for training, 3) then update the large table after training, 4) repeat the step 2) & 3) until convergence.
 
 Evaluation methods: NDCG@K, Recall@K, MRR, AUC
 
