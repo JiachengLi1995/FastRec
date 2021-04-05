@@ -20,6 +20,7 @@ class ItemDataset(object):
                                                          args.test_negative_sampling_seed,
                                                          self.path)
         self.negative_samples = negative_sampler.get_negative_samples()
+        self.user_shuffle = list(self.train.keys())
         self.subdataset_idx = 0
 
     def merge(self, a, b, c):
@@ -45,24 +46,25 @@ class ItemDataset(object):
     def subdataset(self, k=100000):
         assert len(self.smap) > k
         # sample
-        user_shuffle = list(self.train.keys())
         if self.subdataset_idx == 0:
-            random.shuffle(user_shuffle)
+            random.shuffle(self.user_shuffle)
         items, users = set([]), []
-        for u in range(self.subdataset_idx, len(user_shuffle)):
-            for i in self.train[user_shuffle[u]]:
+        
+        for u in range(self.subdataset_idx, len(self.user_shuffle)):
+            for i in self.train[self.user_shuffle[u]]:
                 items.add(i)
-            if user_shuffle[u] in self.val:
-                for i in self.val[user_shuffle[u]]:
+            if self.user_shuffle[u] in self.val:
+                for i in self.val[self.user_shuffle[u]]:
                     items.add(i)
-            if user_shuffle[u] in self.test:
-                for i in self.test[user_shuffle[u]]:
+            if self.user_shuffle[u] in self.test:
+                for i in self.test[self.user_shuffle[u]]:
                     items.add(i)
-            users.append(user_shuffle[u])
+            users.append(self.user_shuffle[u])
             if len(items) > k:
                 break
+            
         print("user: %d" % u)
-        if u == len(user_shuffle) - 1:
+        if u == len(self.user_shuffle) - 1:
             self.subdataset_idx = 0
         else:
             self.subdataset_idx = u + 1
