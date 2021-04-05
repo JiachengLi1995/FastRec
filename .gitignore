@@ -13,6 +13,7 @@ data/ml-1m
 data/amazon
 data/*negative-*.json
 experiments/*
+script/train_ml.sh
 
 .coverage
 coverage.xml

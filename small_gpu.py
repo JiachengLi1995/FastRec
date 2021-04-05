@@ -20,7 +20,10 @@ if __name__ == '__main__':
     dataset = dataset_factory(args)
 
     # large embedding table (on cpu)
-    global_num_items = set(list(dataset.smap.keys()))
+    global_num_items = set([])
+    for u in dataset.train:
+        for i in dataset.train[u]:
+            global_num_items.add(i)
     local_num_items = set([])
     large_embed = torch.zeros(len(dataset.smap)+2, args.trm_hidden_dim) # embeddings + [cloze, pad] 
     torch.nn.init.xavier_uniform_(large_embed[:-2])

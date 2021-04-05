@@ -50,11 +50,21 @@ class ItemDataset(object):
             random.shuffle(user_shuffle)
         items, users = set([]), []
         for u in range(self.subdataset_idx, len(user_shuffle)):
+            item_temp = set([])
             for i in self.train[user_shuffle[u]]:
-                items.add(i)
-            users.append(user_shuffle[u])
-            if len(items) > k:
+                item_temp.add(i)
+            if user_shuffle[u] in self.val:
+                for i in self.val[user_shuffle[u]]:
+                    item_temp.add(i)
+            if user_shuffle[u] in self.test:
+                for i in self.test[user_shuffle[u]]:
+                    item_temp.add(i)
+            if len(items | item_temp) > k:
                 break
+            else:
+                users.append(user_shuffle[u])
+                items = items | item_temp
+        print("user: %d" % u)
         if u == len(user_shuffle) - 1:
             self.subdataset_idx = 0
         else:
@@ -65,11 +75,7 @@ class ItemDataset(object):
         val = {umap[u]:self.val[u] for u in users if u in self.val}
         test = {umap[u]:self.test[u] for u in users if u in self.test}
         # item mapping
-        items = []
-        for temp in [train, val, test]:
-            for i in temp:
-                items.extend(temp[i])
-        items = list(set(items))
+        items = list(items)
         smap = dict(zip(items, range(len(items))))
         for temp in [train, val, test]:
             for i in temp:
