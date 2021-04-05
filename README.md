@@ -41,10 +41,12 @@ Model training with our default hyper-parameter configure.
     ```bash
     bash script/train.sh ${gpu_id} ${data_name} large_gpu
     ```
-- If GPU Mem is too small to train the entire model, we split item embedding table into several parts, and use `small_gpu.py` to tackle the problem.
+- If GPU Mem is too small to train the entire model, we use `small_gpu.py` to tackle the problem.
     ```bash
     bash script/train.sh ${gpu_id} ${data_name} small_gpu
     ```
+    Technical details: 1) We maintain a large table (e.g. 15M items) on CPU mem;  2) sample a subset (e.g. 5M items) as to GPU at one time for training, 3) then update the large table after training, 4) repeat the step 2) & 3) until convegence.
+
 Evaluation methods: NDCG@K, Recall@K, MRR, AUC
 
 
@@ -59,12 +61,13 @@ Evaluation methods: NDCG@K, Recall@K, MRR, AUC
 For evaluation, we uniformly sample 100,000 users and for each user we uniformly sample 1000 items as negative candidates, which will be ranked with the single positive item (form a ranking list containing 1001 items).
 Training time is about 25 hours.
 
+<!-- | Validation Set| 0.35626 | 0.52921 | 0.31500 | 0.90279 | -->
 
-|        | NDCG@10 | Recall@10 | MRR | AUC |
+| Training | NDCG@10 | Recall@10 | MRR | AUC |
 |--------|---------|-----------|-----|-----|
-| Validation Set| 0.35626 | 0.52921 | 0.31500 | 0.90279 |
-| Test Set| 0.33591 | 0.50647 | 0.29566 | 0.89410 |
+| `Large GPU` Mode | 0.33591 | 0.50647 | 0.29566 | 0.89410 |
+| `Small GPU` Mode| 0.33551 | 0.49193 | 0.29593 | 0.79813 |
 
 ## Notebook
 
-We also provide a notebook `Amazon_Beauty.ipynb` to demostrate the whole training process with a toy Amazon dataset.
+We also provide a notebook `demo.ipynb` to demostrate the whole training process with a toy Amazon dataset.
