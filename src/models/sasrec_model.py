@@ -68,7 +68,7 @@ class SASRecModel(nn.Module):
 
     def log2feats(self, log_seqs):
         seqs = self.lookup(log_seqs)
-        seqs *= self.item_emb.embedding_dim ** 0.5
+        seqs *= self.args.trm_hidden_dim ** 0.5
         positions = torch.arange(log_seqs.shape[1]).long().unsqueeze(0).repeat([log_seqs.shape[0], 1])
         seqs = seqs + self.pos_emb(positions.to(seqs.device))
         seqs = self.emb_dropout(seqs)
@@ -79,13 +79,18 @@ class SASRecModel(nn.Module):
         tl = seqs.shape[1] # time dim len for enforce causality
         attention_mask = ~torch.tril(torch.ones((tl, tl), dtype=torch.bool, device=seqs.device))
 
+        attn_output_weights = []
+
         for i in range(len(self.attention_layers)):
             seqs = torch.transpose(seqs, 0, 1)
             Q = self.attention_layernorms[i](seqs)
-            mha_outputs, _ = self.attention_layers[i](Q, seqs, seqs, 
+            mha_outputs, attn_output_weight = self.attention_layers[i](Q, seqs, seqs, 
                                             attn_mask=attention_mask)
                                             # key_padding_mask=timeline_mask
                                             # need_weights=False) this arg do not work?
+            
+            attn_output_weights.append(attn_output_weight)
+            
             seqs = Q + mha_outputs
             seqs = torch.transpose(seqs, 0, 1)
 
@@ -95,17 +100,19 @@ class SASRecModel(nn.Module):
 
         log_feats = self.last_layernorm(seqs) # (U, T, C) -> (U, -1, C)
 
-        return log_feats
+        return log_feats, attn_output_weights
 
 
-    def forward(self, x, candidates=None, length=None, save_name=None, mode="train", users=None):
+    def forward(self, x, candidates=None, length=None, save_name=None, mode="train", users=None, need_weights=False):
 
         idx1, idx2 = self.select_predict_index(x) if mode == "train" else (torch.arange(x.size(0)), length.squeeze())
-        log_feats = self.log2feats(x) # user_ids hasn't been used yet
+        log_feats, attn_weights = self.log2feats(x) # user_ids hasn't been used yet
 
         log_feats = log_feats[idx1, idx2]
 
         if mode == "serving":
+            if need_weights:
+                return log_feats, attn_weights
             return log_feats
 
         elif mode == "train":
@@ -134,6 +141,8 @@ class SASRecModel(nn.Module):
                 logits = torch.bmm(log_feats, w).squeeze(1) # (batch_size, candidates)
             else:
                 logits = self.all_predict(log_feats)
+            if need_weights:
+                return logits, attn_weights
             return logits
         
 
@@ -153,15 +162,28 @@ class SASRecModel(nn.Module):
         if self.args.emb_device_idx is None:
             w = self.item_emb.weight.transpose(1,0)
             return torch.matmul(log_feats, w)
-        elif self.args.emb_device_idx.lower() == 'cpu':
+        elif type(self.args.emb_device_idx) == str and self.args.emb_device_idx.lower() == 'cpu':
             w = self.item_emb.weight.transpose(1,0)
             return torch.matmul(log_feats.to('cpu'), w).to(self.args.device)
+        else:
+            res = 0
+            for i, emb_device in enumerate(self.args.emb_device_idx):
+                b, e = self.args.emb_device_idx[emb_device]
+                x = log_feats[..., b:e].to(emb_device)
+                res += torch.matmul(x, self.item_emb_list[i].weight.transpose(1,0)).to(self.args.device)
+            return res
 
     def lookup(self, x):
         if self.args.emb_device_idx is None:
             return self.item_emb(x)
-        elif self.args.emb_device_idx.lower() == 'cpu':
+        elif type(self.args.emb_device_idx) == str and self.args.emb_device_idx.lower() == 'cpu':
             return self.item_emb(x.to('cpu')).to(self.args.device)
+        else:
+            res = []
+            for emb_layer in self.item_emb_list:
+                device = emb_layer.weight.device
+                res.append(emb_layer(x.to(device)).to(self.args.device))
+            return torch.cat(res, dim=-1)
 
     def to_device(self, device):
         if self.args.emb_device_idx is None:
@@ -173,4 +195,36 @@ class SASRecModel(nn.Module):
             self.item_emb = temp
             print('move embedding layer to:', self.item_emb.weight.device)
             return self
+        try:
+            self.args.emb_device_idx = eval(self.args.emb_device_idx)
+            temp = self.item_emb.weight.data.detach()
+            self.item_emb = None
+            self.to(device)
+            self.item_emb_list = []
+            for emb_device in self.args.emb_device_idx:
+                b, e = self.args.emb_device_idx[emb_device]
+                partial_emb = nn.Embedding.from_pretrained(temp[..., b:e], freeze=False, padding_idx=-1).to(emb_device)
+                self.item_emb_list.append(partial_emb)
+            self.item_emb_list = nn.ModuleList(self.item_emb_list)
+            print('move embedding layer to:', self.args.emb_device_idx)
+            return self
+        except:
+            print("ERROR: please follow this rule to set emb_device_idx: None / cpu / {'cpu':(0,16), 'cuda:0':(16,50)}")
+            exit()
 
+    def device_state_dict(self):
+        if type(self.args.emb_device_idx) != dict:
+            return self.state_dict()
+        else:
+            params = self.state_dict()
+            name_from, name_to = 'item_emb_list', 'item_emb'
+            temp = []
+            for i in params.keys():
+                j = i.split('.')
+                if j[0] == name_from:
+                    temp.append((int(j[1]), i, params[i].to('cpu')))
+            for _, i, _ in temp:
+                del params[i]
+            temp = [t[-1] for t in sorted(temp)]
+            params[name_to+".weight"] = torch.cat(temp, dim=-1)
+            return params
