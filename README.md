@@ -41,7 +41,13 @@ Model training with our default hyper-parameter configure.
     ```bash
     bash script/train.sh ${gpu_id} ${data_name} large_gpu
     ```
-- If GPU Mem is too small to train the entire model, we use `small_gpu.py` to tackle the problem.
+- If Multiple GPUs Mem are large enough to train the entire model
+    ```bash
+    bash script/train_on_multi_devices.sh ${gpu_id} ${data_name}
+    ```
+    where we set `--emb_device_idx "{'cuda:0':(0,20), 'cuda:1':(20,50)}"` to split embedding lookup table by dimension to feed into different devices. 
+    **Note:** we can also put partial embedding table (e.g. 20%) on cpu mem in this way, such as `--emb_device_idx "{'cpu':(0,20), 'cuda:0':(20,50)}"`, but training will be super slow (~5x training time).
+- If GPU Mem is too small to train the entire model, and only one GPU, we use `small_gpu.py` to tackle the problem.
     ```bash
     bash script/train.sh ${gpu_id} ${data_name} small_gpu
     ```
@@ -59,14 +65,14 @@ Evaluation methods: NDCG@K, Recall@K, MRR, AUC
 ## Results
 
 For evaluation, we uniformly sample 100,000 users and for each user we uniformly sample 1000 items as negative candidates, which will be ranked with the single positive item (form a ranking list containing 1001 items).
-Training time is about 25 hours.
+Training time is about 25 hours on `Large GPU` Mode and `Multi GPU` Mode (with NVLink), and about 42 hours on `Small GPU` Mode.
 
 <!-- | Validation Set| 0.35626 | 0.52921 | 0.31500 | 0.90279 | -->
 
 | Training | NDCG@10 | Recall@10 | MRR | AUC |
 |--------|---------|-----------|-----|-----|
 | `Large GPU` Mode | 0.33591 | 0.50647 | 0.29566 | 0.89410 |
-| `Small GPU` Mode| 0.33551 | 0.49193 | 0.29593 | 0.79813 |
+| `Small GPU` Mode| 0.33855 | 0.499912 | 0.29800 | 0.80470 |
 
 ## Notebook
 
