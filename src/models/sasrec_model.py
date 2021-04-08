@@ -36,8 +36,8 @@ class SASRecModel(nn.Module):
 
         self.num_items = args.num_items
 
-        self.token_emb = torch.nn.Embedding(self.num_items+2, args.trm_hidden_dim, padding_idx=-1)
-        self.pad_token = self.token_emb.padding_idx
+        self.item_emb = torch.nn.Embedding(self.num_items+2, args.trm_hidden_dim, padding_idx=-1)
+        self.pad_token = self.item_emb.padding_idx
         self.pos_emb = torch.nn.Embedding(args.trm_max_len, args.trm_hidden_dim) # TO IMPROVE
         self.emb_dropout = torch.nn.Dropout(p=args.trm_dropout)
 
@@ -67,8 +67,8 @@ class SASRecModel(nn.Module):
         self.init_weights()
 
     def log2feats(self, log_seqs):
-        seqs = self.item_emb(log_seqs)
-        seqs *= self.token_emb.embedding_dim ** 0.5
+        seqs = self.lookup(log_seqs)
+        seqs *= self.item_emb.embedding_dim ** 0.5
         positions = torch.arange(log_seqs.shape[1]).long().unsqueeze(0).repeat([log_seqs.shape[0], 1])
         seqs = seqs + self.pos_emb(positions.to(seqs.device))
         seqs = self.emb_dropout(seqs)
@@ -115,8 +115,8 @@ class SASRecModel(nn.Module):
 
             # import pdb; pdb.set_trace()
 
-            pos_embs = self.item_emb(pos_seqs)
-            neg_embs = self.item_emb(neg_seqs)
+            pos_embs = self.lookup(pos_seqs)
+            neg_embs = self.lookup(neg_seqs)
 
             pos_logits = (log_feats * pos_embs).sum(dim=-1)
             neg_logits = (log_feats * neg_embs).sum(dim=-1)
@@ -130,7 +130,7 @@ class SASRecModel(nn.Module):
         else:
             if candidates is not None:
                 log_feats = log_feats.unsqueeze(1) # x is (batch_size, 1, embed_size)
-                w = self.item_emb(candidates).transpose(2,1) # (batch_size, embed_size, candidates)
+                w = self.lookup(candidates).transpose(2,1) # (batch_size, embed_size, candidates)
                 logits = torch.bmm(log_feats, w).squeeze(1) # (batch_size, candidates)
             else:
                 logits = self.all_predict(log_feats)
@@ -151,26 +151,26 @@ class SASRecModel(nn.Module):
 
     def all_predict(self, log_feats):
         if self.args.emb_device_idx is None:
-            w = self.token_emb.weight.transpose(1,0)
+            w = self.item_emb.weight.transpose(1,0)
             return torch.matmul(log_feats, w)
         elif self.args.emb_device_idx.lower() == 'cpu':
-            w = self.token_emb.weight.transpose(1,0)
+            w = self.item_emb.weight.transpose(1,0)
             return torch.matmul(log_feats.to('cpu'), w).to(self.args.device)
 
-    def item_emb(self, x):
+    def lookup(self, x):
         if self.args.emb_device_idx is None:
-            return self.token_emb(x)
+            return self.item_emb(x)
         elif self.args.emb_device_idx.lower() == 'cpu':
-            return self.token_emb(x.to('cpu')).to(self.args.device)
+            return self.item_emb(x.to('cpu')).to(self.args.device)
 
     def to_device(self, device):
         if self.args.emb_device_idx is None:
             return self.to(device)
         elif self.args.emb_device_idx.lower() == 'cpu':
-            temp = self.token_emb
-            self.token_emb = None
+            temp = self.item_emb
+            self.item_emb = None
             self.to(device)
-            self.token_emb = temp
-            print('move embedding layer to:', self.token_emb.weight.device)
+            self.item_emb = temp
+            print('move embedding layer to:', self.item_emb.weight.device)
             return self
 
