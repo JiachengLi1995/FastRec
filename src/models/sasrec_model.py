@@ -73,7 +73,7 @@ class SASRecModel(nn.Module):
         seqs = seqs + self.pos_emb(positions.to(seqs.device))
         seqs = self.emb_dropout(seqs)
 
-        timeline_mask = (log_seqs == self.pad_token).bool()
+        timeline_mask = (log_seqs == 0).bool()
         seqs *= ~timeline_mask.unsqueeze(-1) # broadcast in last dim
 
         tl = seqs.shape[1] # time dim len for enforce causality

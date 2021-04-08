@@ -66,7 +66,7 @@ Training time is about 25 hours.
 | Training | NDCG@10 | Recall@10 | MRR | AUC |
 |--------|---------|-----------|-----|-----|
 | `Large GPU` Mode | 0.33591 | 0.50647 | 0.29566 | 0.89410 |
-| `Small GPU` Mode| 0.33855 | 0.499912 | 0.29800 | 0.80470 |
+| `Small GPU` Mode| 0.33551 | 0.49193 | 0.29593 | 0.79813 |
 
 ## Notebook
 
