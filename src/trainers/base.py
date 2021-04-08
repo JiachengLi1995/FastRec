@@ -18,7 +18,7 @@ class AbstractTrainer(metaclass=ABCMeta):
         self.user2seq = user2seq
         self.args = args
         self.device = args.device
-        self.model = model.to(self.device)
+        self.model = model.to_device(self.device)
 
         self.train_loader = train_loader
         self.val_loader = val_loader
