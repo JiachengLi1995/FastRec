@@ -48,6 +48,7 @@ parser.add_argument('--trainer_code', type=str, default='sasrec_sample', choices
 parser.add_argument('--device', type=str, default='cpu', choices=['cpu', 'cuda'])
 parser.add_argument('--num_gpu', type=int, default=1)
 parser.add_argument('--device_idx', type=str, default='0')
+parser.add_argument('--emb_device_idx', type=str, default=None, help='None: as the same as device_idx; cpu: move all item embeddings to the cpu mem')
 
 # optimizer #
 parser.add_argument('--optimizer', type=str, default='Adam', choices=['SGD','Adam'])
