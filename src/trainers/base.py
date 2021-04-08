@@ -234,6 +234,5 @@ class AbstractTrainer(metaclass=ABCMeta):
 
     def _create_state_dict(self):
         return {
-            STATE_DICT_KEY: self.model.state_dict(),
-            OPTIMIZER_STATE_DICT_KEY: self.optimizer.state_dict(),
+            STATE_DICT_KEY: self.model.device_state_dict(),
         }

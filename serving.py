@@ -11,6 +11,8 @@ from src.trainers import trainer_factory
 from src.utils.options import parser
 from src.utils.utils import *
 
+from time import time
+
 if __name__ == '__main__':
 
     # hyper-parameter config
@@ -50,7 +52,7 @@ if __name__ == '__main__':
     nb = model.item_emb.weight.size(0)                      # item pool size
     xb = model.item_emb.weight.data.cpu().numpy()           # item embeddings table
 
-    index_path = os.path.join(ckpt_root, 'models', 'test.idx')
+    index_path = args.load_pretrained_weights.replace('best_acc_model.pth', 'test.idx')
     if os.path.exist(index_path):
         print("read index")
         index = faiss.read_index(index_path)
@@ -64,11 +66,19 @@ if __name__ == '__main__':
 
     k = 10
     xb_tensor = torch.Tensor(xb).transpose()
+    reg_timer, faiss_timer = [], []
     for batch_idx, batch in enumerate(test_loader):      
         users, seqs, candidates, labels, length = batch
         xq = self.model(seqs, length=length, mode="serving").detach().cpu()
+        t = time()
         V, I = torch.topk((xq @ xb_tensor), k)
-        print(I)
+        reg_timer.append(time()-t)
+        print("REG:", I)
+        t = time()
         V, I = index.search(xq.numpy().astype('float32'), k)
-        print(I)
-        break
+        faiss_timer.append(time()-t)
+        print("Faiss:", I)
+        if batch_idx == 100:
+            reabk
+    
+    print("reg:", np.mean(reg_timer), "faiss", np.mean(faiss_timer))
