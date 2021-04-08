@@ -51,7 +51,7 @@ if __name__ == '__main__':
     xb = model.item_emb.weight.data.cpu().numpy()           # item embeddings table
 
     index_path = os.path.join(ckpt_root, 'models', 'test.idx')
-    if os.path.exist(index_path):
+    if os.path.exists(index_path):
         print("read index")
         index = faiss.read_index(index_path)
     else:
