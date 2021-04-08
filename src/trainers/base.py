@@ -91,7 +91,7 @@ class AbstractTrainer(metaclass=ABCMeta):
             accum_iter += batch_size
 
             log_data = {
-                'state_dict': (self._create_state_dict()),
+                'state_dict': (self._create_state_dict(skip=True)),
                 'epoch': epoch+1,
                 'accum_iter': accum_iter,
             }
@@ -232,7 +232,9 @@ class AbstractTrainer(metaclass=ABCMeta):
         
         return writer, train_loggers, val_loggers, test_loggers
 
-    def _create_state_dict(self):
+    def _create_state_dict(self, skip=False):
+        if skip:
+            return None
         return {
             STATE_DICT_KEY: self.model.device_state_dict(),
         }

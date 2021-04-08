@@ -65,11 +65,11 @@ if __name__ == '__main__':
         print("index stored")
 
     k = 10
-    xb_tensor = torch.Tensor(xb).transpose()
+    xb_tensor = torch.Tensor(xb).transpose(1,0)
     reg_timer, faiss_timer = [], []
     for batch_idx, batch in enumerate(test_loader):      
         users, seqs, candidates, labels, length = batch
-        xq = self.model(seqs, length=length, mode="serving").detach().cpu()
+        xq = model(seqs, length=length, mode="serving").detach().cpu()
         t = time()
         V, I = torch.topk((xq @ xb_tensor), k)
         reg_timer.append(time()-t)
@@ -78,7 +78,7 @@ if __name__ == '__main__':
         V, I = index.search(xq.numpy().astype('float32'), k)
         faiss_timer.append(time()-t)
         print("Faiss:", I)
-        if batch_idx == 100:
-            reabk
+        if batch_idx == 50:
+            break
     
     print("reg:", np.mean(reg_timer), "faiss", np.mean(faiss_timer))

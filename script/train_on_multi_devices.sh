@@ -10,7 +10,7 @@ CUDA_VISIBLE_DEVICES=$1 python large_gpu.py \
     --test_negative_sampling_seed 98765 \
     --device 'cuda' \
     --device_idx $1 \
-    --emb_device_idx 'cpu' \
+    --emb_device_idx "{'cuda:0':(0,20), 'cuda:1':(20,50)}" \
     --optimizer 'Adam' \
     --lr 1e-3 \
     --weight_decay 0 \
