@@ -1,6 +1,8 @@
 from src.utils.loggers import *
 from src.utils.utils import AverageMeterSet, STATE_DICT_KEY, OPTIMIZER_STATE_DICT_KEY
+from src.models import model_factory
 
+import gc
 import os
 import torch
 import torch.nn as nn
@@ -145,8 +147,13 @@ class AbstractTrainer(metaclass=ABCMeta):
     def test(self):
         print('Test best model with test set!')
 
+        del self.model
+        gc.collect()
+
         best_model = torch.load(os.path.join(self.ckpt_root, 'models', 'best_acc_model.pth')).get('model_state_dict')
+        self.model = model_factory(self.args)
         self.model.load_state_dict(best_model)
+        self.mode = self.model.to_device(self.device)
         self.model.eval()
 
         average_meter_set = AverageMeterSet()

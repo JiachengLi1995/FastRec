@@ -159,24 +159,24 @@ class SASRecModel(nn.Module):
                         pass # just ignore those failed init layers
 
     def all_predict(self, log_feats):
-        if self.args.emb_device_idx is None:
+        if self.emb_device_idx is None:
             w = self.item_emb.weight.transpose(1,0)
             return torch.matmul(log_feats, w)
-        elif type(self.args.emb_device_idx) == str and self.args.emb_device_idx.lower() == 'cpu':
+        elif type(self.emb_device_idx) == str and self.emb_device_idx.lower() == 'cpu':
             w = self.item_emb.weight.transpose(1,0)
             return torch.matmul(log_feats.to('cpu'), w).to(self.args.device)
         else:
             res = 0
-            for i, emb_device in enumerate(self.args.emb_device_idx):
-                b, e = self.args.emb_device_idx[emb_device]
+            for i, emb_device in enumerate(self.emb_device_idx):
+                b, e = self.emb_device_idx[emb_device]
                 x = log_feats[..., b:e].to(emb_device)
                 res += torch.matmul(x, self.item_emb_list[i].weight.transpose(1,0)).to(self.args.device)
             return res
 
     def lookup(self, x):
-        if self.args.emb_device_idx is None:
+        if self.emb_device_idx is None:
             return self.item_emb(x)
-        elif type(self.args.emb_device_idx) == str and self.args.emb_device_idx.lower() == 'cpu':
+        elif type(self.emb_device_idx) == str and self.emb_device_idx.lower() == 'cpu':
             return self.item_emb(x.to('cpu')).to(self.args.device)
         else:
             res = []
@@ -186,9 +186,10 @@ class SASRecModel(nn.Module):
             return torch.cat(res, dim=-1)
 
     def to_device(self, device):
-        if self.args.emb_device_idx is None:
+        self.emb_device_idx = self.args.emb_device_idx
+        if self.emb_device_idx is None:
             return self.to(device)
-        elif self.args.emb_device_idx.lower() == 'cpu':
+        elif self.emb_device_idx.lower() == 'cpu':
             temp = self.item_emb
             self.item_emb = None
             self.to(device)
@@ -196,24 +197,24 @@ class SASRecModel(nn.Module):
             print('move embedding layer to:', self.item_emb.weight.device)
             return self
         try:
-            self.args.emb_device_idx = eval(self.args.emb_device_idx)
+            self.emb_device_idx = eval(self.emb_device_idx)
             temp = self.item_emb.weight.data.detach()
             self.item_emb = None
             self.to(device)
             self.item_emb_list = []
-            for emb_device in self.args.emb_device_idx:
-                b, e = self.args.emb_device_idx[emb_device]
+            for emb_device in self.emb_device_idx:
+                b, e = self.emb_device_idx[emb_device]
                 partial_emb = nn.Embedding.from_pretrained(temp[..., b:e], freeze=False, padding_idx=-1).to(emb_device)
                 self.item_emb_list.append(partial_emb)
             self.item_emb_list = nn.ModuleList(self.item_emb_list)
-            print('move embedding layer to:', self.args.emb_device_idx)
+            print('move embedding layer to:', self.emb_device_idx)
             return self
         except:
             print("ERROR: please follow this rule to set emb_device_idx: None / cpu / {'cpu':(0,16), 'cuda:0':(16,50)}")
             exit()
 
     def device_state_dict(self):
-        if type(self.args.emb_device_idx) != dict:
+        if type(self.emb_device_idx) != dict:
             return self.state_dict()
         else:
             params = self.state_dict()
