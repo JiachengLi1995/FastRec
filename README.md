@@ -74,6 +74,9 @@ Training time is about 25 hours on `Large GPU` Mode and `Multi GPU` Mode (with N
 | `Large GPU` Mode | 0.33591 | 0.50647 | 0.29566 | 0.89410 |
 | `Small GPU` Mode| 0.33855 | 0.499912 | 0.29800 | 0.80470 |
 
-## Notebook
+## Notebook for Training and Serving
 
-We also provide a notebook `demo.ipynb` to demostrate the whole training process with a toy Amazon dataset.
+We also provide a notebook `demo.ipynb` to demostrate:
+- the whole **training process** with a toy Amazon dataset. 
+- how to export our model to `onnx` model and run with `onnxruntime` or `tensorrt`.
+- how to use our model to generate embeddings for approximated knn searching with `faiss`.

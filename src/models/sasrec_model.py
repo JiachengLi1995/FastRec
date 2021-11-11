@@ -6,6 +6,7 @@ import torch
 from torch import nn as nn
 
 from src.utils.utils import fix_random_seed_as
+from src.models.onnx_support import tril_mask_onnx, MultiHeadAttention
 
 
 class PointWiseFeedForward(torch.nn.Module):
@@ -52,9 +53,7 @@ class SASRecModel(nn.Module):
             new_attn_layernorm = torch.nn.LayerNorm(args.trm_hidden_dim, eps=1e-8)
             self.attention_layernorms.append(new_attn_layernorm)
 
-            new_attn_layer =  torch.nn.MultiheadAttention(args.trm_hidden_dim,
-                                                            args.trm_num_heads,
-                                                            args.trm_dropout)
+            new_attn_layer =  MultiHeadAttention(args.trm_hidden_dim, args.trm_num_heads, args.trm_dropout)
             self.attention_layers.append(new_attn_layer)
 
             new_fwd_layernorm = torch.nn.LayerNorm(args.trm_hidden_dim, eps=1e-8)
@@ -77,22 +76,20 @@ class SASRecModel(nn.Module):
         seqs *= ~timeline_mask.unsqueeze(-1) # broadcast in last dim
 
         tl = seqs.shape[1] # time dim len for enforce causality
-        attention_mask = ~torch.tril(torch.ones((tl, tl), dtype=torch.bool, device=seqs.device))
+        attention_mask = ~tril_mask_onnx(torch.ones((tl, tl), dtype=torch.bool, device=seqs.device)) # used for exporting onnx 
 
         attn_output_weights = []
 
         for i in range(len(self.attention_layers)):
-            seqs = torch.transpose(seqs, 0, 1)
             Q = self.attention_layernorms[i](seqs)
+
             mha_outputs, attn_output_weight = self.attention_layers[i](Q, seqs, seqs, 
-                                            attn_mask=attention_mask)
-                                            # key_padding_mask=timeline_mask
-                                            # need_weights=False) this arg do not work?
+                                            attn_mask=attention_mask.float())
+                                            # attn_mask=None)
             
             attn_output_weights.append(attn_output_weight)
             
             seqs = Q + mha_outputs
-            seqs = torch.transpose(seqs, 0, 1)
 
             seqs = self.forward_layernorms[i](seqs)
             seqs = self.forward_layers[i](seqs)
@@ -103,7 +100,7 @@ class SASRecModel(nn.Module):
         return log_feats, attn_output_weights
 
 
-    def forward(self, x, candidates=None, length=None, save_name=None, mode="train", users=None, need_weights=False):
+    def forward(self, x, candidates=None, length=None, save_name=None, mode="test", users=None, need_weights=False):
 
         idx1, idx2 = self.select_predict_index(x) if mode == "train" else (torch.arange(x.size(0)), length.squeeze())
         log_feats, attn_weights = self.log2feats(x) # user_ids hasn't been used yet

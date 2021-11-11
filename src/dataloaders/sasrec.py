@@ -81,7 +81,7 @@ class SASRecTrainDataset(data_utils.Dataset):
         item_negative = []
         while len(item_negative) < length:
             item_negative_tmp = self.rng.randint(0, self.num_items-1)
-            while item_negative in self.u2seq[user]:
+            while item_negative_tmp in self.u2seq[user]:
                 item_negative_tmp = self.rng.randint(0, self.num_items-1)
             item_negative.append(item_negative_tmp)
 
