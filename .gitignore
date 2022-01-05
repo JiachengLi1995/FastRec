@@ -9,7 +9,7 @@
 ## Re-use PyTorch .gitignore file
 
 # add ours
-data/ml-1m
+
 data/amazon
 data/*negative-*.json
 experiments/*

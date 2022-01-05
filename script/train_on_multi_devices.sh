@@ -1,6 +1,6 @@
 DATASET=${2}
 
-CUDA_VISIBLE_DEVICES=$1 python large_gpu.py \
+CUDA_VISIBLE_DEVICES=$1 python main.py \
     --data_path "data/${DATASET}" \
     --train_batch_size 2048 \
     --val_batch_size 512 \

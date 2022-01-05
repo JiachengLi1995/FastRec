@@ -39,7 +39,7 @@ Model training with our default hyper-parameter configure.
 
 - If GPU Mem is large enough to train the entire model
     ```bash
-    bash script/train.sh ${gpu_id} ${data_name} large_gpu
+    bash script/train.sh ${gpu_id} ${data_name} main
     ```
 - If Multiple GPUs Mem are large enough to train the entire model
     ```bash

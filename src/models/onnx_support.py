@@ -34,6 +34,25 @@ def tril_mask_onnx(inputs: torch.BoolTensor,
 
     return mask
 
+
+class PointWiseFeedForward(torch.nn.Module):
+    def __init__(self, hidden_units, dropout_rate):
+
+        super(PointWiseFeedForward, self).__init__()
+
+        self.linear1 = torch.nn.Linear(hidden_units, hidden_units)
+        self.dropout1 = torch.nn.Dropout(p=dropout_rate)
+        self.relu = torch.nn.ReLU()
+        self.linear2 = torch.nn.Linear(hidden_units, hidden_units)
+        self.dropout2 = torch.nn.Dropout(p=dropout_rate)
+
+    def forward(self, inputs):
+        outputs = self.dropout2(self.linear2(self.relu(self.dropout1(self.linear1(inputs.transpose(-1, -2))))))
+        outputs = outputs.transpose(-1, -2) # as Conv1D requires (N, C, Length)
+        outputs += inputs
+        return outputs
+
+
 class MultiHeadAttention(nn.Module):
     "Take in model size and number of heads."
     def __init__(self, d_model, h, dropout=0.1):
