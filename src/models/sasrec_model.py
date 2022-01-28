@@ -66,11 +66,15 @@ class SASRecModel(nn.Module):
         
         # weights initialization
         self.init_weights()
+        self.position = [[i for i in range(50)] for _ in range(64)]
 
     def log2feats(self, log_seqs):
         seqs = self.lookup(log_seqs)
         seqs *= self.args.trm_hidden_dim ** 0.5
-        positions = torch.arange(log_seqs.shape[1]).long().unsqueeze(0).repeat([log_seqs.shape[0], 1])
+
+        positions = torch.tensor(self.position, dtype=torch.int64)
+        positions = positions[:log_seqs.shape[0], :]
+
         seqs = seqs + self.pos_emb(positions.to(seqs.device))
         seqs = self.emb_dropout(seqs)
 
@@ -78,7 +82,7 @@ class SASRecModel(nn.Module):
         seqs *= ~timeline_mask.unsqueeze(-1) # broadcast in last dim
 
         tl = seqs.shape[1] # time dim len for enforce causality
-        attention_mask = ~tril_mask_onnx(torch.ones((tl, tl), dtype=torch.bool, device=seqs.device)) # used for exporting onnx 
+        attention_mask = ~tril_mask_onnx(torch.ones((tl, tl), dtype=torch.int64, device=seqs.device)) # used for exporting onnx 
 
         attn_output_weights = []
 

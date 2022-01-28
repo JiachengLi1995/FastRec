@@ -27,10 +27,11 @@ def tril_mask_onnx(inputs: torch.BoolTensor,
 
     """
 
-    arange = torch.arange(inputs.size(0), device=inputs.device)
-    arange2 = torch.arange(inputs.size(1), device=inputs.device)
-
-    mask = arange.unsqueeze(-1).expand(-1, inputs.size(1)) >= (arange2 - diagonal)
+    arange = torch.arange(50, device=inputs.device)
+    arange2 = torch.arange(50, device=inputs.device)
+    # print("inputs.size(0): ", inputs.size(0))
+    # print("inputs.size(1): ", inputs.size(1))
+    mask = arange.unsqueeze(-1).expand(-1, 50) >= (arange2 - diagonal)
 
     return mask
 
